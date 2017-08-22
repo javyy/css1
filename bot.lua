@@ -78,9 +78,6 @@ function send(chat_id, msg_id, text)
 		},
 	}, dl_cb, nil)
 end
-get_admin()
-redis:set("botBOT-IDstart", true)
-end
 function tdcli_update_callback(data)
 	if data.ID == "UpdateNewMessage" then
 		end
