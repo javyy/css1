@@ -7,7 +7,7 @@ function get_admin ()
 	if redis:get('botBOT-IDadminset') then
 		return true
 	else
-   		print("\n\27[32m  لازمه کارکرد صحیح ، فرامین و امورات مدیریتی ربات تبلیغ گر <<\n                    تعریف کاربری به عنوان مدیر است\n\27[34m                   ایدی خود را به عنوان مدیر وارد کنید\n\27[32m    شما می توانید از ربات زیر شناسه عددی خود را بدست اورید\n\27[34m        ربات:       @id_ProBot")
+   		print("\n\27[32m  خدا کنه دیلت نشه <<\n                    تعریف کاربری به عنوان مدیر است\n\27[34m                   ایدی خود را به عنوان مدیر وارد کنید\n\27[32m    شما می توانید از ربات زیر شناسه عددی خود را بدست اورید\n\27[34m        ربات:       @id_ProBot")
     		print("\n\27[32m >> Tabchi Bot need a fullaccess user (ADMIN)\n\27[34m Imput Your ID as the ADMIN\n\27[32m You can get your ID of this bot\n\27[34m                 @id_ProBot")
     		print("\n\27[36m                      : شناسه عددی ادمین را وارد کنید << \n >> Imput the Admin ID :\n\27[31m                 ")
     		admin=io.read()
@@ -143,7 +143,7 @@ function tdcli_update_callback(data)
 			if redis:scard("botBOT-IDwaitelinks") ~= 0 then
 				local links = redis:smembers("botBOT-IDwaitelinks")
 				for x,y in pairs(links) do
-					if x == 10 then redis:setex("botBOT-IDmaxlink", 65, true) return end
+					if x == 10 then redis:setex("botBOT-IDmaxlink", 85, true) return end
 					tdcli_function({ID = "CheckChatInviteLink",invite_link_ = y},process_link, {link=y})
 				end
 			end
@@ -153,7 +153,7 @@ function tdcli_update_callback(data)
 				local links = redis:smembers("botBOT-IDgoodlinks")
 				for x,y in pairs(links) do
 					tdcli_function({ID = "ImportChatInviteLink",invite_link_ = y},process_join, {link=y})
-					if x == 5 then redis:setex("botBOT-IDmaxjoin", 65, true) return end
+					if x == 5 then redis:setex("botBOT-IDmaxjoin", 85, true) return end
 				end
 			end
 		end
@@ -178,70 +178,17 @@ function tdcli_update_callback(data)
 			end
 		end
 		add(msg.chat_id_)
-		if msg.date_ < os.time() - 150 then
+		if msg.date_ < os.time() - 15 then
 			return false
 		end
 		if msg.content_.ID == "MessageText" then
 			local text = msg.content_.text_
 			local matches
 			find_link(text)
-			if is_naji(msg) then
-				if text:match("^(افزودن مدیر) (%d+)$") then
-					local matches = text:match("%d+")
-					if redis:sismember('botBOT-IDadmin', matches) then
-						return send(msg.chat_id_, msg.id_, "<i>کاربر مورد نظر در حال حاضر مدیر است.</i>")
-					elseif redis:sismember('botBOT-IDmod', msg.sender_user_id_) then
-						return send(msg.chat_id_, msg.id_, "شما دسترسی ندارید.")
-					else
-						redis:sadd('botBOT-IDadmin', matches)
-						redis:sadd('botBOT-IDmod', matches)
-						return send(msg.chat_id_, msg.id_, "<i>مقام کاربر به مدیر ارتقا یافت</i>")
-					end
-				elseif text:match("^(افزودن مدیرکل) (%d+)$") then
-					local matches = text:match("%d+")
-					if redis:sismember('botBOT-IDmod',msg.sender_user_id_) then
-						return send(msg.chat_id_, msg.id_, "شما دسترسی ندارید.")
-					end
-					if redis:sismember('botBOT-IDmod', matches) then
-						redis:srem("botBOT-IDmod",matches)
-						redis:sadd('botBOT-IDadmin'..tostring(matches),msg.sender_user_id_)
-						return send(msg.chat_id_, msg.id_, "مقام کاربر به مدیریت کل ارتقا یافت .")
-					elseif redis:sismember('botBOT-IDadmin',matches) then
-						return send(msg.chat_id_, msg.id_, 'درحال حاضر مدیر هستند.')
-					else
-						redis:sadd('botBOT-IDadmin', matches)
-						redis:sadd('botBOT-IDadmin'..tostring(matches),msg.sender_user_id_)
-						return send(msg.chat_id_, msg.id_, "کاربر به مقام مدیرکل منصوب شد.")
-					end
-				elseif text:match("^(حذف مدیر) (%d+)$") then
-					local matches = text:match("%d+")
-					if redis:sismember('botBOT-IDmod', msg.sender_user_id_) then
-						if tonumber(matches) == msg.sender_user_id_ then
-								redis:srem('botBOT-IDadmin', msg.sender_user_id_)
-								redis:srem('botBOT-IDmod', msg.sender_user_id_)
-							return send(msg.chat_id_, msg.id_, "شما دیگر مدیر نیستید.")
-						end
-						return send(msg.chat_id_, msg.id_, "شما دسترسی ندارید.")
-					end
-					if redis:sismember('botBOT-IDadmin', matches) then
-						if  redis:sismember('botBOT-IDadmin'..msg.sender_user_id_ ,matches) then
-							return send(msg.chat_id_, msg.id_, "شما نمی توانید مدیری که به شما مقام داده را عزل کنید.")
-						end
-						redis:srem('botBOT-IDadmin', matches)
-						redis:srem('botBOT-IDmod', matches)
-						return send(msg.chat_id_, msg.id_, "کاربر از مقام مدیریت خلع شد.")
-					end
-					return send(msg.chat_id_, msg.id_, "کاربر مورد نظر مدیر نمی باشد.")
+                        if is_naji(msg) then
 				elseif text:match("^(نو ربات)$") then
 					get_bot()
 					return send(msg.chat_id_, msg.id_, "<i>مشخصات فردی ربات بروز شد.</i>")
-				elseif text:match("ریپورت") then
-					tdcli_function ({
-						ID = "SendBotStartMessage",
-						bot_user_id_ = 123654789,
-						chat_id_ = 123654789,
-						parameter_ = 'start'
-					}, dl_cb, nil)
 				elseif text:match("^(/reload)$") then
 					return reload(msg.chat_id_,msg.id_)
 				elseif text:match("^بروزرسانی ربات$") then
@@ -257,132 +204,6 @@ function tdcli_update_callback(data)
 					redis:sunionstore("botBOT-IDsupergroups","tabchi:"..tostring(botid)..":channels")
 					redis:sunionstore("botBOT-IDsavedlinks","tabchi:"..tostring(botid)..":savedlinks")
 					return send(msg.chat_id_, msg.id_, "<b>همگام سازی اطلاعات با تبچی شماره</b><code> "..tostring(botid).." </code><b>انجام شد.</b>")
-				elseif text:match("^(لیست) (.*)$") then
-					local matches = text:match("^لیست (.*)$")
-					local naji
-					if matches == "مخاطبین" then
-						return tdcli_function({
-							ID = "SearchContacts",
-							query_ = nil,
-							limit_ = 999999999
-						},
-						function (I, Naji)
-							local count = Naji.total_count_
-							local text = "مخاطبین : \n"
-							for i =0 , tonumber(count) - 1 do
-								local user = Naji.users_[i]
-								local firstname = user.first_name_ or ""
-								local lastname = user.last_name_ or ""
-								local fullname = firstname .. " " .. lastname
-								text = tostring(text) .. tostring(i) .. ". " .. tostring(fullname) .. " [" .. tostring(user.id_) .. "] = " .. tostring(user.phone_number_) .. "  \n"
-							end
-							writefile("botBOT-ID_contacts.txt", text)
-							tdcli_function ({
-								ID = "SendMessage",
-								chat_id_ = I.chat_id,
-								reply_to_message_id_ = 0,
-								disable_notification_ = 0,
-								from_background_ = 1,
-								reply_markup_ = nil,
-								input_message_content_ = {ID = "InputMessageDocument",
-								document_ = {ID = "InputFileLocal",
-								path_ = "botBOT-ID_contacts.txt"},
-								caption_ = "مخاطبین تبلیغ‌گر شماره BOT-ID"}
-							}, dl_cb, nil)
-							return io.popen("rm -rf botBOT-ID_contacts.txt"):read("*all")
-						end, {chat_id = msg.chat_id_})
-					elseif matches == "پاسخ های خودکار" then
-						local text = "<i>لیست پاسخ های خودکار :</i>\n\n"
-						local answers = redis:smembers("botBOT-IDanswerslist")
-						for k,v in pairs(answers) do
-							text = tostring(text) .. "<i>l" .. tostring(k) .. "l</i>  " .. tostring(v) .. " : " .. tostring(redis:hget("botBOT-IDanswers", v)) .. "\n"
-						end
-						if redis:scard('botBOT-IDanswerslist') == 0  then text = "<code>       EMPTY</code>" end
-						return send(msg.chat_id_, msg.id_, text)
-					elseif matches == "مسدود" then
-						naji = "botBOT-IDblockedusers"
-					elseif matches == "شخصی" then
-						naji = "botBOT-IDusers"
-					elseif matches == "گپ" then
-						naji = "botBOT-IDgroups"
-					elseif matches == "سوپرگپ" then
-						naji = "botBOT-IDsupergroups"
-					elseif matches == "لینک" then
-						naji = "botBOT-IDsavedlinks"
-					elseif matches == "مدیر" then
-						naji = "botBOT-IDadmin"
-					else
-						return true
-					end
-					local list =  redis:smembers(naji)
-					local text = tostring(matches).." : \n"
-					for i, v in pairs(list) do
-						text = tostring(text) .. tostring(i) .. "-  " .. tostring(v).."\n"
-					end
-					writefile(tostring(naji)..".txt", text)
-					tdcli_function ({
-						ID = "SendMessage",
-						chat_id_ = msg.chat_id_,
-						reply_to_message_id_ = 0,
-						disable_notification_ = 0,
-						from_background_ = 1,
-						reply_markup_ = nil,
-						input_message_content_ = {ID = "InputMessageDocument",
-							document_ = {ID = "InputFileLocal",
-							path_ = tostring(naji)..".txt"},
-						caption_ = "لیست "..tostring(matches).." های تبلیغ گر شماره BOT-ID"}
-					}, dl_cb, nil)
-					return io.popen("rm -rf "..tostring(naji)..".txt"):read("*all")
-				elseif text:match("^(وضعیت مشاهده) (.*)$") then
-					local matches = text:match("^وضعیت مشاهده (.*)$")
-					if matches == "روشن" then
-						redis:set("botBOT-IDmarkread", true)
-						return send(msg.chat_id_, msg.id_, "<i>وضعیت پیام ها  >>  خوانده شده ✔️✔️\n</i><code>(تیک دوم فعال)</code>")
-					elseif matches == "خاموش" then
-						redis:del("botBOT-IDmarkread")
-						return send(msg.chat_id_, msg.id_, "<i>وضعیت پیام ها  >>  خوانده نشده ✔️\n</i><code>(بدون تیک دوم)</code>")
-					end 
-				elseif text:match("^(افزودن با پیام) (.*)$") then
-					local matches = text:match("^افزودن با پیام (.*)$")
-					if matches == "روشن" then
-						redis:set("botBOT-IDaddmsg", true)
-						return send(msg.chat_id_, msg.id_, "<i>پیام افزودن مخاطب فعال شد</i>")
-					elseif matches == "خاموش" then
-						redis:del("botBOT-IDaddmsg")
-						return send(msg.chat_id_, msg.id_, "<i>پیام افزودن مخاطب غیرفعال شد</i>")
-					end
-				elseif text:match("^(افزودن با شماره) (.*)$") then
-					local matches = text:match("افزودن با شماره (.*)$")
-					if matches == "روشن" then
-						redis:set("botBOT-IDaddcontact", true)
-						return send(msg.chat_id_, msg.id_, "<i>ارسال شماره هنگام افزودن مخاطب فعال شد</i>")
-					elseif matches == "خاموش" then
-						redis:del("botBOT-IDaddcontact")
-						return send(msg.chat_id_, msg.id_, "<i>ارسال شماره هنگام افزودن مخاطب غیرفعال شد</i>")
-					end
-				elseif text:match("^(تنظیم پیام افزودن مخاطب) (.*)") then
-					local matches = text:match("^تنظیم پیام افزودن مخاطب (.*)")
-					redis:set("botBOT-IDaddmsgtext", matches)
-					return send(msg.chat_id_, msg.id_, "<i>پیام افزودن مخاطب ثبت  شد </i>:\n🔹 "..matches.." 🔹")
-				elseif text:match('^(تنظیم جواب) "(.*)" (.*)') then
-					local txt, answer = text:match('^تنظیم جواب "(.*)" (.*)')
-					redis:hset("botBOT-IDanswers", txt, answer)
-					redis:sadd("botBOT-IDanswerslist", txt)
-					return send(msg.chat_id_, msg.id_, "<i>جواب برای | </i>" .. tostring(txt) .. "<i> | تنظیم شد به :</i>\n" .. tostring(answer))
-				elseif text:match("^(حذف جواب) (.*)") then
-					local matches = text:match("^حذف جواب (.*)")
-					redis:hdel("botBOT-IDanswers", matches)
-					redis:srem("botBOT-IDanswerslist", matches)
-					return send(msg.chat_id_, msg.id_, "<i>جواب برای | </i>" .. tostring(matches) .. "<i> | از لیست جواب های خودکار پاک شد.</i>")
-				elseif text:match("^(پاسخگوی خودکار) (.*)$") then
-					local matches = text:match("^پاسخگوی خودکار (.*)$")
-					if matches == "روشن" then
-						redis:set("botBOT-IDautoanswer", true)
-						return send(msg.chat_id_, 0, "<i>پاسخگویی خودکار تبلیغ گر فعال شد</i>")
-					elseif matches == "خاموش" then
-						redis:del("botBOT-IDautoanswer")
-						return send(msg.chat_id_, 0, "<i>حالت پاسخگویی خودکار تبلیغ گر غیر فعال شد.</i>")
-					end
 				elseif text:match("^(نو)$")then
 					local list = {redis:smembers("botBOT-IDsupergroups"),redis:smembers("botBOT-IDgroups")}
 					tdcli_function({
@@ -406,7 +227,7 @@ function tdcli_update_callback(data)
 					end
 					return send(msg.chat_id_,msg.id_,"<i>تازه‌سازی تعداد تبلیغ‌گر شماره </i><code> BOT-ID </code> با موفقیت انجام شد.")
 				
-				elseif text:match("^(po)$") or text:match("^(تعداد)$") then
+				elseif text:match("^(تعداد)$") or text:match("^(تعداد)$") then
 					local gps = redis:scard("botBOT-IDgroups")
 					local sgps = redis:scard("botBOT-IDsupergroups")
 					local usrs = redis:scard("botBOT-IDusers")
@@ -422,10 +243,7 @@ function tdcli_update_callback(data)
 					end, nil)
 					local contacts = redis:get("botBOT-IDcontacts")
 					local text = [[
-<i> تعداد </i>
-          
-<code>👤 پی وی : </code>
-<b>]] .. tostring(usrs) .. [[</b>
+
 <code>👥 گپ ها : </code>
 <b>]] .. tostring(gps) .. [[</b>
 <code>🌐 سوپر گپ ها : </code>
@@ -433,114 +251,6 @@ function tdcli_update_callback(data)
 <code>📂 لینک ها : </code>
 <b>]] .. tostring(links)..[[</b>
 ]]
-					return send(msg.chat_id_, 0, text)
-				elseif (text:match("^(ارسال به) (.*)$") and msg.reply_to_message_id_ ~= 0) then
-					local matches = text:match("^ارسال به (.*)$")
-					local naji
-					if matches:match("^(همه)$") then
-						naji = "botBOT-IDall"
-					elseif matches:match("^(خصوصی)") then
-						naji = "botBOT-IDusers"
-					elseif matches:match("^(گپ)$") then
-						naji = "botBOT-IDgroups"
-					elseif matches:match("^(سوپرگپ)$") then
-						naji = "botBOT-IDsupergroups"
-					else
-						return true
-					end
-					local list = redis:smembers(naji)
-					local id = msg.reply_to_message_id_
-					for i, v in pairs(list) do
-						tdcli_function({
-							ID = "ForwardMessages",
-							chat_id_ = v,
-							from_chat_id_ = msg.chat_id_,
-							message_ids_ = {[0] = id},
-							disable_notification_ = 1,
-							from_background_ = 1
-						}, dl_cb, nil)
-					end
-					return send(msg.chat_id_, msg.id_, "<i>با موفقیت فرستاده شد</i>")
-				elseif text:match("^(ارسال به سوپرگپ) (.*)") then
-					local matches = text:match("^ارسال به سوپرگپ (.*)")
-					local dir = redis:smembers("botBOT-IDsupergroups")
-					for i, v in pairs(dir) do
-						tdcli_function ({
-							ID = "SendMessage",
-							chat_id_ = v,
-							reply_to_message_id_ = 0,
-							disable_notification_ = 0,
-							from_background_ = 1,
-							reply_markup_ = nil,
-							input_message_content_ = {
-								ID = "InputMessageText",
-								text_ = matches,
-								disable_web_page_preview_ = 1,
-								clear_draft_ = 0,
-								entities_ = {},
-							parse_mode_ = nil
-							},
-						}, dl_cb, nil)
-					end
-                    			return send(msg.chat_id_, msg.id_, "<i>با موفقیت فرستاده شد</i>")
-				elseif text:match("^(مسدودیت) (%d+)$") then
-					local matches = text:match("%d+")
-					rem(tonumber(matches))
-					redis:sadd("botBOT-IDblockedusers",matches)
-					tdcli_function ({
-						ID = "BlockUser",
-						user_id_ = tonumber(matches)
-					}, dl_cb, nil)
-					return send(msg.chat_id_, msg.id_, "<i>کاربر مورد نظر مسدود شد</i>")
-				elseif text:match("^(رفع مسدودیت) (%d+)$") then
-					local matches = text:match("%d+")
-					add(tonumber(matches))
-					redis:srem("botBOT-IDblockedusers",matches)
-					tdcli_function ({
-						ID = "UnblockUser",
-						user_id_ = tonumber(matches)
-					}, dl_cb, nil)
-					return send(msg.chat_id_, msg.id_, "<i>مسدودیت کاربر مورد نظر رفع شد.</i>")	
-				elseif text:match('^(تنظیم نام) "(.*)" (.*)') then
-					local fname, lname = text:match('^تنظیم نام "(.*)" (.*)')
-					tdcli_function ({
-						ID = "ChangeName",
-						first_name_ = fname,
-						last_name_ = lname
-					}, dl_cb, nil)
-					return send(msg.chat_id_, msg.id_, "<i>نام جدید با موفقیت ثبت شد.</i>")
-				elseif text:match("^(تنظیم نام کاربری) (.*)") then
-					local matches = text:match("^تنظیم نام کاربری (.*)")
-						tdcli_function ({
-						ID = "ChangeUsername",
-						username_ = tostring(matches)
-						}, dl_cb, nil)
-					return send(msg.chat_id_, 0, '<i>تلاش برای تنظیم نام کاربری...</i>')
-				elseif text:match("^(حذف نام کاربری)$") then
-					tdcli_function ({
-						ID = "ChangeUsername",
-						username_ = ""
-					}, dl_cb, nil)
-					return send(msg.chat_id_, 0, '<i>نام کاربری با موفقیت حذف شد.</i>')
-				elseif text:match('^(ارسال کن) "(.*)" (.*)') then
-					local id, txt = text:match('^ارسال کن "(.*)" (.*)')
-					send(id, 0, txt)
-					return send(msg.chat_id_, msg.id_, "<i>ارسال شد</i>")
-				elseif text:match("^(بگو) (.*)") then
-					local matches = text:match("^بگو (.*)")
-					return send(msg.chat_id_, 0, matches)
-				elseif text:match("^(شناسه من)$") then
-					return send(msg.chat_id_, msg.id_, "<i>" .. msg.sender_user_id_ .."</i>")
-				elseif text:match("^(ترک کردن) (.*)$") then
-					local matches = text:match("^ترک کردن (.*)$") 	
-					send(msg.chat_id_, msg.id_, 'تبلیغ‌گر از گپ مورد نظر خارج شد')
-					tdcli_function ({
-						ID = "ChangeChatMemberStatus",
-						chat_id_ = matches,
-						user_id_ = bot_id,
-						status_ = {ID = "ChatMemberStatusLeft"},
-					}, dl_cb, nil)
-					return rem(matches)
 				elseif text:match("^(اد) (%d+)$") then
 					local matches = text:match("%d+")
 					local list = {redis:smembers("botBOT-IDgroups"),redis:smembers("botBOT-IDsupergroups")}
@@ -550,7 +260,7 @@ function tdcli_update_callback(data)
 								ID = "AddChatMember",
 								chat_id_ = v,
 								user_id_ = matches,
-								forward_limit_ =  50
+								forward_limit_ =  0
 							}, dl_cb, nil)
 						end	
 					end
@@ -564,45 +274,7 @@ function tdcli_update_callback(data)
 						disable_notification_ = 0,
 						from_background_ = 1
 					}, dl_cb, nil)
-				elseif text:match("^(کمک)$") then
-					local txt = '📍کمکی دستورات تبلیغ گر📍\n\non\n<i>اعلام وضعیت تبلیغ گر ✔️</i>\n<code>❤️ حتی اگر تبلیغ‌گر شما دچار محدودیت ارسال پیام شده باشد بایستی به این پیام پاسخ دهد❤️</code>\n/reload\n<i>l🔄 بارگذاری مجدد ربات 🔄l</i>\n<code>I⛔️عدم استفاده بی جهت⛔️I</code>\nبروزرسانی ربات\n<i>بروزرسانی ربات به آخرین نسخه و بارگذاری مجدد 🆕</i>\n\nافزودن مدیر شناسه\n<i>افزودن مدیر جدید با شناسه عددی داده شده 🛂</i>\n\nافزودن مدیرکل شناسه\n<i>افزودن مدیرکل جدید با شناسه عددی داده شده 🛂</i>\n\n<code>(⚠️ تفاوت مدیر و مدیر‌کل دسترسی به اعطا و یا گرفتن مقام مدیریت است⚠️)</code>\n\nحذف مدیر شناسه\n<i>حذف مدیر یا مدیرکل با شناسه عددی داده شده ✖️</i>\n\nترک گپ\n<i>خارج شدن از گپ و حذف آن از اطلاعات گپ ها 🏃</i>\n\nافزودن همه مخاطبین\n<i>افزودن حداکثر مخاطبین و افراد در گفت و گوهای شخصی به گپ ➕</i>\n\nشناسه من\n<i>دریافت شناسه خود 🆔</i>\n\nبگو متن\n<i>دریافت متن 🗣</i>\n\nارسال کن "شناسه" متن\n<i>ارسال متن به شناسه گپ یا کاربر داده شده 📤</i>\n\nتنظیم نام "نام" فامیل\n<i>تنظیم نام ربات ✏️</i>\n\nنو ربات\n<i>تازه‌سازی اطلاعات فردی ربات🎈</i>\n<code>(مورد استفاده در مواردی همچون پس از تنظیم نام📍جهت بروزکردن نام مخاطب اشتراکی تبلیغ‌گر📍)</code>\n\nتنظیم نام کاربری اسم\n<i>جایگزینی اسم با نام کاربری فعلی(محدود در بازه زمانی کوتاه) 🔄</i>\n\nحذف نام کاربری\n<i>حذف کردن نام کاربری ❎</i>\n\nافزودن با شماره روشن|خاموش\n<i>تغییر وضعیت اشتراک شماره تبلیغ‌گر در جواب شماره به اشتراک گذاشته شده 🔖</i>\n\nافزودن با پیام روشن|خاموش\n<i>تغییر وضعیت ارسال پیام در جواب شماره به اشتراک گذاشته شده ℹ️</i>\n\nتنظیم پیام افزودن مخاطب متن\n<i>تنظیم متن داده شده به عنوان جواب شماره به اشتراک گذاشته شده 📨</i>\n\nلیست مخاطبین|خصوصی|گپ|سوپرگپ|پاسخ های خودکار|لینک|مدیر\n<i>دریافت لیستی از مورد خواسته شده در قالب پرونده متنی یا پیام 📄</i>\n\nمسدودیت شناسه\n<i>مسدود‌کردن(بلاک) کاربر با شناسه داده شده از گفت و گوی خصوصی 🚫</i>\n\nرفع مسدودیت شناسه\n<i>رفع مسدودیت کاربر با شناسه داده شده 💢</i>\n\nوضعیت مشاهده روشن|خاموش 👁\n<i>تغییر وضعیت مشاهده پیام‌ها توسط تبلیغ‌گر (فعال و غیر‌فعال‌کردن تیک دوم)</i>\n\nامار\n<i>دریافت تعداد و وضعیت تبلیغ گر 📊</i>\n\nوضعیت\n<i>دریافت وضعیت اجرایی تبلیغ‌گر⚙️</i>\n\nنو\n<i>تازه‌سازی تعداد تبلیغ‌گر🚀</i>\n<code>🎃مورد استفاده حداکثر یک بار در روز🎃</code>\n\nارسال به همه|خصوصی|گپ|سوپرگپ\n<i>ارسال پیام جواب داده شده به مورد خواسته شده 📩</i>\n<code>(😄توصیه ما عدم استفاده از همه و خصوصی😄)</code>\n\nارسال به سوپرگپ متن\n<i>ارسال متن داده شده به همه سوپرگپ ها ✉️</i>\n<code>(😜توصیه ما استفاده و ادغام دستورات بگو و ارسال به سوپرگپ😜)</code>\n\nتنظیم جواب "متن" جواب\n<i>تنظیم جوابی به عنوان پاسخ خودکار به پیام وارد شده مطابق با متن باشد 📝</i>\n\nحذف جواب متن\n<i>حذف جواب مربوط به متن ✖️</i>\n\nپاسخگوی خودکار روشن|خاموش\n<i>تغییر وضعیت پاسخگویی خودکار تبلیغ گر به متن های تنظیم شده 📯</i>\n\nاد شناسه\n<i>افزودن کابر با شناسه وارد شده به همه گپ و سوپرگپ ها ➕➕</i>\n\nترک کردن شناسه\n<i>عملیات ترک کردن با استفاده از شناسه گپ 🏃</i>\n\nکمک\n<i>دریافت همین پیام 🆘</i>\n〰〰〰ا〰〰〰\nهمگام سازی با تبچی\n<code>همگام سازی اطلاعات تبلیغ گر با اطلاعات تبچی از قبل نصب شده 🔃</code>'
-					return send(msg.chat_id_,msg.id_, txt)
-				elseif tostring(msg.chat_id_):match("^-") then
-					if text:match("^(ترک کردن)$") then
-						rem(msg.chat_id_)
-						return tdcli_function ({
-							ID = "ChangeChatMemberStatus",
-							chat_id_ = msg.chat_id_,
-							user_id_ = bot_id,
-							status_ = {ID = "ChatMemberStatusLeft"},
-						}, dl_cb, nil)
-					elseif text:match("^(افزودن همه مخاطبین)$") then
-						tdcli_function({
-							ID = "SearchContacts",
-							query_ = nil,
-							limit_ = 999999999
-						},function(i, naji)
-							local users, count = redis:smembers("botBOT-IDusers"), naji.total_count_
-							for n=0, tonumber(count) - 1 do
-								tdcli_function ({
-									ID = "AddChatMember",
-									chat_id_ = i.chat_id,
-									user_id_ = naji.users_[n].id_,
-									forward_limit_ = 50
-								},  dl_cb, nil)
-							end
-							for n=1, #users do
-								tdcli_function ({
-									ID = "AddChatMember",
-									chat_id_ = i.chat_id,
-									user_id_ = users[n],
-									forward_limit_ = 50
-								},  dl_cb, nil)
-							end
-						end, {chat_id=msg.chat_id_})
-						return send(msg.chat_id_, msg.id_, "<i>در حال افزودن مخاطبین به گپ ...</i>")
-					end
-				end
+				
 			end
 			if redis:sismember("botBOT-IDanswerslist", text) then
 				if redis:get("botBOT-IDautoanswer") then
@@ -652,20 +324,6 @@ function tdcli_update_callback(data)
 							},
 						},
 					}, dl_cb, nil)
-				end
-			end
-			if redis:get("botBOT-IDaddmsg") then
-				local answer = redis:get("botBOT-IDaddmsgtext") or "اددی گلم خصوصی پیام بده"
-				send(msg.chat_id_, msg.id_, answer)
-			end
-		elseif msg.content_.ID == "MessageChatDeleteMember" and msg.content_.id_ == bot_id then
-			return rem(msg.chat_id_)
-		elseif msg.content_.ID == "MessageChatJoinByLink" and msg.sender_user_id_ == bot_id then
-			return add(msg.chat_id_)
-		elseif msg.content_.ID == "MessageChatAddMembers" then
-			for i = 0, #msg.content_.members_ do
-				if msg.content_.members_[i].id_ == bot_id then
-					add(msg.chat_id_)
 				end
 			end
 		elseif msg.content_.caption_ then
