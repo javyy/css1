@@ -55,7 +55,7 @@ end
 function process_join(i, naji)
 	if naji.code_ == 429 then
 		local message = tostring(naji.message_)
-		local Time = message:match('%d+') + 350
+		local Time = message:match('%d+') + 85
 		redis:setex("botBOT-IDmaxjoin", tonumber(Time), true)
 	else
 		redis:srem("botBOT-IDgoodlinks", i.link)
@@ -68,7 +68,7 @@ function process_link(i, naji)
 		redis:sadd("botBOT-IDgoodlinks", i.link)
 	elseif naji.code_ == 429 then
 		local message = tostring(naji.message_)
-		local Time = message:match('%d+') + 385
+		local Time = message:match('%d+') + 85
 		redis:setex("botBOT-IDmaxlink", tonumber(Time), true)
 	else
 		redis:srem("botBOT-IDwaitelinks", i.link)
@@ -143,7 +143,7 @@ function tdcli_update_callback(data)
 			if redis:scard("botBOT-IDwaitelinks") ~= 0 then
 				local links = redis:smembers("botBOT-IDwaitelinks")
 				for x,y in pairs(links) do
-					if x == 11 then redis:setex("botBOT-IDmaxlink", 65, true) return end
+					if x == 10 then redis:setex("botBOT-IDmaxlink", 65, true) return end
 					tdcli_function({ID = "CheckChatInviteLink",invite_link_ = y},process_link, {link=y})
 				end
 			end
@@ -405,19 +405,8 @@ function tdcli_update_callback(data)
 							end
 					end
 					return send(msg.chat_id_,msg.id_,"<i>تازه‌سازی تعداد تبلیغ‌گر شماره </i><code> BOT-ID </code> با موفقیت انجام شد.")
-				elseif text:match("^(وضعیت)$") then
-					local s = redis:get("botBOT-IDmaxjoin") and redis:ttl("botBOT-IDmaxjoin") or 0
-					local ss = redis:get("botBOT-IDmaxlink") and redis:ttl("botBOT-IDmaxlink") or 0
-					local msgadd = redis:get("botBOT-IDaddmsg") and "☑️" or "❎"
-					local numadd = redis:get("botBOT-IDaddcontact") and "✅" or "❎"
-					local txtadd = redis:get("botBOT-IDaddmsgtext") or  "اد‌دی گلم خصوصی پیام بده"
-					local autoanswer = redis:get("botBOT-IDautoanswer") and "✅" or "❎"
-					local wlinks = redis:scard("botBOT-IDwaitelinks")
-					local glinks = redis:scard("botBOT-IDgoodlinks")
-					local links = redis:scard("botBOT-IDsavedlinks")
-					local txt = "<i>⚙️ وضعیت اجرایی تبلیغ‌گر</i><code> BOT-ID </code>⛓\n\n" .. tostring(autoanswer) .."<code> حالت پاسخگویی خودکار 🗣 </code>\n" .. tostring(numadd) .. "<code> افزودن مخاطب با شماره 📞 </code>\n" .. tostring(msgadd) .. "<code> افزودن مخاطب با پیام 🗞</code>\n〰〰〰ا〰〰〰\n<code>📄 پیام افزودن مخاطب :</code>\n📍 " .. tostring(txtadd) .. " 📍\n〰〰〰ا〰〰〰\n<code>📁 لینک ها : </code><b>" .. tostring(links) .. "</b>\n<code>⏲	لینک های در انتظار عضویت : </code><b>" .. tostring(glinks) .. "</b>\n🕖   <b>" .. tostring(s) .. " </b><code>ثانیه تا عضویت مجدد</code>\n<code>❄️ لینک های در انتظار تایید : </code><b>" .. tostring(wlinks) .. "</b>\n🕑️   <b>" .. tostring(ss) .. " </b><code>ثانیه تا تایید لینک مجدد</code>"
-					return send(msg.chat_id_, 0, txt)
-				elseif text:match("^(تعداد)$") or text:match("^(تعداد)$") then
+				
+				elseif text:match("^(po)$") or text:match("^(تعداد)$") then
 					local gps = redis:scard("botBOT-IDgroups")
 					local sgps = redis:scard("botBOT-IDsupergroups")
 					local usrs = redis:scard("botBOT-IDusers")
