@@ -316,7 +316,7 @@ function tdcli_update_callback(data)
 						redis:set("botBOT-IDofflink", true)
 						return send(msg.chat_id_, msg.id_, "باشه تایید رو شروع میکنم.")
 					elseif matches == "شناسایی لینک" then	
-						redis:del("botBOT-IDlink", true)
+						redis:del("botBOT-IDlink")
 						return send(msg.chat_id_, msg.id_, "شناسایی هم میکنم.")
 					elseif matches == "افزودن مخاطب" then	
 						redis:del("botBOT-IDsavecontacts")
@@ -333,7 +333,7 @@ function tdcli_update_callback(data)
 						redis:del("botBOT-IDofflink")
 						return send(msg.chat_id_, msg.id_, "تایید میکنم.")
 					elseif matches == "شناسایی لینک" then	
-						redis:set("botBOT-IDlink")
+						redis:set("botBOT-IDlink",true)
 						return send(msg.chat_id_, msg.id_, "شناسایی میکنم.")
 					elseif matches == "افزودن مخاطب" then	
 						redis:set("botBOT-IDsavecontacts", true)
@@ -508,10 +508,10 @@ function tdcli_update_callback(data)
 				elseif text:match("^(گروه عضویت باز) (.*)$") then
 					local matches = text:match("^گروه عضویت باز (.*)$")
 					if matches == "روشن" then
-						redis:set("botBOT-IDopenjoin", true)
+						redis:set("botBOT-IDopenjoin")
 						return send(msg.chat_id_, msg.id_, "<i>عضویت فقط در گروه هایی که قابلیت افزودن عضو دارند فعال شد.</i>")
 					elseif matches == "خاموش" then
-						redis:del("botBOT-IDopenjoin")
+						redis:del("botBOT-IDopenjoin",true)
 						return send(msg.chat_id_, msg.id_, "<i>محدودیت عضویت در گروه های قابلیت افزودن خاموش شد.</i>")
 					end
 				elseif text:match("^(افزودن با شماره) (.*)$") then
